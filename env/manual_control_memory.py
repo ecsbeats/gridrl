@@ -4,9 +4,8 @@ import gymnasium as gym
 import pygame
 
 from minigrid.core.actions import Actions
-# from minigrid.minigrid_env import MiniGridEnv # Removed by Gemini
 from minigrid.wrappers import ImgObsWrapper, RGBImgPartialObsWrapper
-from memory import MemoryEnv # Corrected by Gemini
+from memory import MemoryEnv
 
 
 class ManualControl:
@@ -139,7 +138,6 @@ if __name__ == "__main__":
         tile_size=args.tile_size
     )
 
-    # TODO: check if this can be removed
     if args.agent_view:
         print("Using agent view")
         env = RGBImgPartialObsWrapper(env, args.tile_size)
