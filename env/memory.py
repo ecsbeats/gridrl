@@ -162,3 +162,6 @@ class MemoryEnv(MiniGridEnv):
             terminated = True
 
         return obs, reward, terminated, truncated, info
+
+    def pprint_grid(self):
+        return super().pprint_grid()
