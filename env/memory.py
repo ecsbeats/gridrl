@@ -164,4 +164,62 @@ class MemoryEnv(MiniGridEnv):
         return obs, reward, terminated, truncated, info
 
     def pprint_grid(self):
-        return super().pprint_grid()
+        """
+        Produce a pretty string of the environment's grid along with the agent.
+        A grid cell is represented by 2-character string, the first one for
+        the object and the second one for the color.
+        """
+        if self.agent_pos is None or self.agent_dir is None or self.grid is None:
+            raise ValueError(
+                "The environment hasn't been `reset` therefore the `agent_pos`, `agent_dir` or `grid` are unknown."
+            )
+
+        # Map of object types to short string
+        OBJECT_TO_STR = {
+            "wall": "W",
+            "floor": "F",
+            "door": "D",
+            "key": "K",
+            "ball": "A",
+            "box": "B",
+            "goal": "G",
+            "lava": "V",
+        }
+
+        # Map agent's direction to short string
+        AGENT_DIR_TO_STR = {0: ">", 1: "V", 2: "<", 3: "^"}
+
+        output = ""
+
+        # check if self.agent_pos & self.agent_dir is None
+        # should not be after env is reset
+        if self.agent_pos is None:
+            return super().__str__()
+
+        for j in range(self.grid.height):
+            for i in range(self.grid.width):
+                if i == self.agent_pos[0] and j == self.agent_pos[1]:
+                    output += 2 * AGENT_DIR_TO_STR[self.agent_dir]
+                    continue
+
+                tile = self.grid.get(i, j)
+
+                if tile is None:
+                    output += "  "
+                    continue
+
+                if tile.type == "door":
+                    if tile.is_open:
+                        output += "__"
+                    elif tile.is_locked:
+                        output += "L" + tile.color[0].upper()
+                    else:
+                        output += "D" + tile.color[0].upper()
+                    continue
+
+                output += OBJECT_TO_STR[tile.type] + tile.color[0].upper()
+
+            if j < self.grid.height - 1:
+                output += "\n"
+
+        return output

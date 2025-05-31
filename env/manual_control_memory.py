@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from __future__ import annotations
 
 import gymnasium as gym
@@ -7,8 +5,9 @@ import pygame
 from gymnasium import Env
 
 from minigrid.core.actions import Actions
-from minigrid.minigrid_env import MiniGridEnv
+# from minigrid.minigrid_env import MiniGridEnv # Removed by Gemini
 from minigrid.wrappers import ImgObsWrapper, RGBImgPartialObsWrapper
+from memory import MemoryEnv # Corrected by Gemini
 
 
 class ManualControl:
@@ -46,6 +45,7 @@ class ManualControl:
             self.reset(self.seed)
         else:
             self.env.render()
+            print(self.env.unwrapped.pprint_grid())
 
     def reset(self, seed=None):
         self.env.reset(seed=seed)
@@ -120,13 +120,25 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Create the MemoryEnv
-    env: MiniGridEnv = gym.make(args.env_id,
-        tile_size=args.tile_size,
+    # Determine size and random_length from args.env_id (simplified)
+    # For "MiniGrid-MemoryS<size>(Random)-v0"
+    size_str = args.env_id.split('S')[1].split('Random')[0].split('-')[0]
+    try:
+        size = int(size_str)
+    except ValueError:
+        print(f"Could not parse size from env_id: {args.env_id}. Using default size 13.")
+        size = 13 # Default size
+    random_length = "Random" in args.env_id
+
+    # Create the MemoryEnv directly
+    env = MemoryEnv(
+        size=size,
+        random_length=random_length,
         render_mode="human",
         agent_pov=args.agent_view,
         agent_view_size=args.agent_view_size,
-        screen_size=args.screen_size
+        screen_size=args.screen_size,
+        tile_size=args.tile_size
     )
 
     # TODO: check if this can be removed
