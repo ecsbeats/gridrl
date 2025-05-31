@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import gymnasium as gym
 import pygame
-from gymnasium import Env
 
 from minigrid.core.actions import Actions
 # from minigrid.minigrid_env import MiniGridEnv # Removed by Gemini
@@ -13,7 +12,7 @@ from memory import MemoryEnv # Corrected by Gemini
 class ManualControl:
     def __init__(
         self,
-        env: Env,
+        env: MemoryEnv,
         seed=None,
     ) -> None:
         self.env = env
@@ -45,7 +44,6 @@ class ManualControl:
             self.reset(self.seed)
         else:
             self.env.render()
-            print(self.env.unwrapped.pprint_grid())
 
     def reset(self, seed=None):
         self.env.reset(seed=seed)
