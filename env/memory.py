@@ -6,7 +6,18 @@ from minigrid.core.actions import Actions
 from minigrid.core.grid import Grid
 from minigrid.core.mission import MissionSpace
 from minigrid.core.world_object import Ball, Key, Wall
+from minigrid.core.constants import COLOR_TO_IDX
 from minigrid.minigrid_env import MiniGridEnv
+
+def color_to_ascii(color_name: str) -> str:
+    """
+    Converts color to it's one letter ascii representation.
+    Colors are defined as an ordinal value in minigrid/core/constants.py
+
+    COLOR_TO_IDX = {"red": 0, "green": 1, "blue": 2, "purple": 3, "yellow": 4, "grey": 5}
+    (ASCII)     (=)        A           B          C            D            E          F
+    """
+    return chr(COLOR_TO_IDX.get(color_name) + ord("A"))
 
 
 class MemoryEnv(MiniGridEnv):
@@ -212,12 +223,12 @@ class MemoryEnv(MiniGridEnv):
                     if tile.is_open:
                         output += "__"
                     elif tile.is_locked:
-                        output += "L" + tile.color[0].upper()
+                        output += "L" + color_to_ascii(tile.color)
                     else:
-                        output += "D" + tile.color[0].upper()
+                        output += "D" + color_to_ascii(tile.color)
                     continue
 
-                output += OBJECT_TO_STR[tile.type] + tile.color[0].upper()
+                output += OBJECT_TO_STR[tile.type] + color_to_ascii(tile.color)
 
             if j < self.grid.height - 1:
                 output += "\n"
