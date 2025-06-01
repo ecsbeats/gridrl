@@ -1,12 +1,13 @@
 import dspy
 import mlflow
-from typing import List, Tuple, Optional, Any, Dict
+from typing import List, Tuple, Optional, Any, Literal, Union
 from pydantic import BaseModel, Field
 from enum import Enum
 from memory import MemoryEnv
 import os
 import gymnasium
 from dotenv import load_dotenv
+from gymnasium.wrappers import RecordVideo
 
 load_dotenv()
 
@@ -85,17 +86,20 @@ string_to_action_map = {
 def string_to_action(action: str) -> int:
     return string_to_action_map[action]
 
-def get_game_state(env: MemoryEnv) -> GameState:
+def get_game_state(env: gymnasium.Env) -> GameState:
+    # Access the underlying environment if wrapped
+    unwrapped_env = env.env if hasattr(env, 'env') else env
+
     return GameState(
-        grid_representation=env.pprint_grid(),
-        agent_pos=env.agent_pos,
-        agent_dir=env.agent_dir,
-        mission=env.mission,
-        carrying=env.carrying,
-        step_count=env.step_count,
-        max_steps=env.max_steps,
-        success_pos=env.success_pos,
-        failure_pos=env.failure_pos,
+        grid_representation=unwrapped_env.pprint_grid(),
+        agent_pos=unwrapped_env.agent_pos,
+        agent_dir=unwrapped_env.agent_dir,
+        mission=unwrapped_env.mission,
+        carrying=unwrapped_env.carrying,
+        step_count=unwrapped_env.step_count,
+        max_steps=unwrapped_env.max_steps,
+        success_pos=unwrapped_env.success_pos,
+        failure_pos=unwrapped_env.failure_pos,
         short_term_memory=[], # TODO: add short term memory
         long_term_memory=[], # TODO: add long term memory
     )
@@ -109,7 +113,7 @@ class GenerateActionSignature(dspy.Signature):
     scratchpad: str = dspy.InputField(description="Your scratchpad/memory of the game.")
     previous_action: str = dspy.InputField(description="The previous action you took.")
     feedback: str = dspy.InputField(description="Feedback on the previous action you took from your friend.")
-    action: str = dspy.OutputField(description="Action can be one of the following: left (rotates left), right (rotates right), forward (moves forward in the direction you are facing), toggle (toggles a door), pickup, drop") # not including done due to early stopping
+    action: Literal['forward', 'left', 'right', 'toggle', 'pickup', 'drop'] = dspy.OutputField(description="Action can be one of the following: left (rotates left), right (rotates right), forward (moves forward in the direction you are facing), toggle (toggles a door), pickup, drop") # not including done due to early stopping
 
 class GenerateMechanicsAnalysisSignature(dspy.Signature):
     """
@@ -165,27 +169,52 @@ class GamePlayingAgent(dspy.Module):
 
 
 class Game:
-    def __init__(self, size=13, random_length=False, max_steps=100, render_mode="text"):
+    def __init__(self, size=13, random_length=False, max_steps=100, render_mode: str ="text", video_folder: str = "videos"):
+        self.render_mode = render_mode
+        env_render_mode = "rgb_array" if render_mode == "video" else render_mode
+
         self.env = MemoryEnv(
             size=size,
-            random_length=False,
-            max_steps=100,
-            render_mode=render_mode
+            random_length=random_length,
+            max_steps=max_steps,
+            render_mode=env_render_mode
         )
+
+        if render_mode == "video":
+            if not os.path.exists(video_folder):
+                os.makedirs(video_folder)
+            self.env = RecordVideo(
+                self.env,
+                video_folder=video_folder,
+                episode_trigger=lambda x: True,
+                name_prefix=f"memory-env-s{size}-rl{str(random_length).lower()}"
+            )
         self.agent = GamePlayingAgent()
 
     def run(self):
         self.env.reset()
         terminated = False
-        while not terminated:
-            if self.env.render_mode == "human":
+        truncated = False
+        while not terminated and not truncated:
+            if self.render_mode == "human":
                 self.env.render()
             action, obs, reward, terminated, truncated, info = self.agent.forward(self.env)
         print(f"Total reward: {self.agent.last_reward}")
+        self.env.close()
 
 if __name__ == "__main__":
     setup_mlflow()
     configure_dspy()
     with mlflow.start_run():
-        game = Game(render_mode=os.getenv("RENDER_MODE", "text"), size=int(os.getenv("GAME_SIZE", 13)), random_length=os.getenv("GAME_RANDOM_LENGTH", False))
+        render_mode_env = os.getenv("RENDER_MODE", "text")
+        game_size_env = int(os.getenv("GAME_SIZE", 13))
+        random_length_env = os.getenv("GAME_RANDOM_LENGTH", "False").lower() == "true"
+        video_folder_env = os.getenv("VIDEO_FOLDER", "videos")
+
+        game = Game(
+            render_mode=render_mode_env,
+            size=game_size_env,
+            random_length=random_length_env,
+            video_folder=video_folder_env
+        )
         game.run()
