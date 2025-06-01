@@ -13,6 +13,4 @@ def lm() -> dspy.LM:
 
 def test_dspy_hello_world(lm):
     out = lm("Hello, world!")
-    print(out)
     assert type(out) == list
-
