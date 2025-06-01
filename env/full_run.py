@@ -4,6 +4,7 @@ from typing import List, Tuple, Optional, Any, Dict
 from pydantic import BaseModel, Field
 from enum import Enum
 from memory import MemoryEnv
+import os
 import gymnasium
 
 def setup_mlflow():
@@ -19,7 +20,7 @@ def get_policy_lm() -> dspy.LM:
     lm = dspy.LM(model="openai/gemma3:27b",
                 api_key="X",
                 max_tokens=128000,
-                api_base="http://localhost:11434/v1",
+                api_base=os.getenv("DSPY_API_BASE", "http://localhost:11434/v1"),
                 model_type="chat")
     return lm
 
