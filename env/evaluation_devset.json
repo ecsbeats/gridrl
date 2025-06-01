@@ -1,0 +1,102 @@
+[
+  {
+    "game_config": {
+      "size": 13,
+      "random_length": false,
+      "max_steps": 845,
+      "seed": 0,
+      "example_id": 0
+    },
+    "expected_success": true
+  },
+  {
+    "game_config": {
+      "size": 17,
+      "random_length": false,
+      "max_steps": 1445,
+      "seed": 1,
+      "example_id": 1
+    },
+    "expected_success": true
+  },
+  {
+    "game_config": {
+      "size": 13,
+      "random_length": false,
+      "max_steps": 845,
+      "seed": 2,
+      "example_id": 2
+    },
+    "expected_success": true
+  },
+  {
+    "game_config": {
+      "size": 17,
+      "random_length": false,
+      "max_steps": 1445,
+      "seed": 3,
+      "example_id": 3
+    },
+    "expected_success": true
+  },
+  {
+    "game_config": {
+      "size": 13,
+      "random_length": false,
+      "max_steps": 845,
+      "seed": 4,
+      "example_id": 4
+    },
+    "expected_success": true
+  },
+  {
+    "game_config": {
+      "size": 17,
+      "random_length": false,
+      "max_steps": 1445,
+      "seed": 5,
+      "example_id": 5
+    },
+    "expected_success": true
+  },
+  {
+    "game_config": {
+      "size": 13,
+      "random_length": false,
+      "max_steps": 845,
+      "seed": 6,
+      "example_id": 6
+    },
+    "expected_success": true
+  },
+  {
+    "game_config": {
+      "size": 17,
+      "random_length": false,
+      "max_steps": 1445,
+      "seed": 7,
+      "example_id": 7
+    },
+    "expected_success": true
+  },
+  {
+    "game_config": {
+      "size": 13,
+      "random_length": false,
+      "max_steps": 845,
+      "seed": 8,
+      "example_id": 8
+    },
+    "expected_success": true
+  },
+  {
+    "game_config": {
+      "size": 17,
+      "random_length": false,
+      "max_steps": 1445,
+      "seed": 9,
+      "example_id": 9
+    },
+    "expected_success": true
+  }
+]
