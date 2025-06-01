@@ -159,5 +159,5 @@ if __name__ == "__main__":
     setup_mlflow()
     configure_dspy()
     with mlflow.start_run():
-        game = Game()
+        game = Game(render_mode=os.getenv("RENDER_MODE", "text"))
         game.run()
