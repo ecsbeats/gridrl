@@ -38,7 +38,29 @@ class LongTermMemoryEntry(BaseModel):
     learnings: Optional[str] = Field(None, description="A summary of the learnings from this episode.")
 
 class GameState(BaseModel):
-    grid_representation: str = Field(..., description="ASCII string representation of the full game grid.")
+    grid_representation: str = Field(..., description="""
+                                    ASCII string representation of the full game grid.
+                                    The grid is a 2D array of characters (grouped in 2s),
+                                    The first character is the object in the cell, the second character is the color of the object.
+                                    Objects include:
+                                    Wall: W
+                                    Floor: F
+                                    Door: D
+                                    Key: K
+                                    Ball: A
+                                    Box: B
+                                    Goal: G
+                                    Lava: V
+                                    Colors include:
+                                    Red: A
+                                    Green: B
+                                    Blue: C
+                                    Purple: D
+                                    Yellow: E
+                                    Grey: F
+                                    The grid is 2D, so the first character is the object in the cell, the second character is the color of the object.
+                                    Your position is given by >> (facing right), VV (facing down), << (facing left), ^^ (facing up).
+                                    """)
     agent_pos: Tuple[int, int] = Field(..., description="Agent's current (x, y) position.")
     agent_dir: int = Field(..., description="Agent's current direction (0: right, 1: down, 2: left, 3: up).")
     mission: str = Field(..., description="The mission for the agent.")
@@ -85,7 +107,9 @@ class GenerateActionSignature(dspy.Signature):
 
     game_state: GameState = dspy.InputField(description="The current game state.")
     scratchpad: str = dspy.InputField(description="Your scratchpad/memory of the game.")
-    action: str = dspy.OutputField(description="Action can be one of the following: left, right, forward, toggle, pickup, drop") # not including done due to early stopping
+    previous_action: str = dspy.InputField(description="The previous action you took.")
+    feedback: str = dspy.InputField(description="Feedback on the previous action you took from your friend.")
+    action: str = dspy.OutputField(description="Action can be one of the following: left (rotates left), right (rotates right), forward (moves forward in the direction you are facing), toggle (toggles a door), pickup, drop") # not including done due to early stopping
 
 class GenerateMechanicsAnalysisSignature(dspy.Signature):
     """
@@ -108,6 +132,7 @@ class GamePlayingAgent(dspy.Module):
         self.last_analysis = ""
         self.scratchpad = ""
         self.last_reward = 0
+        self.last_feedback = ""
 
         self.generate_action = dspy.ChainOfThought(GenerateActionSignature)
         self.generate_mechanics_analysis = dspy.ChainOfThought(GenerateMechanicsAnalysisSignature)
@@ -122,7 +147,7 @@ class GamePlayingAgent(dspy.Module):
         game_state = get_game_state(env)
 
         self.last_game_state = game_state
-        generate_actions_output = self.generate_action(game_state=game_state, scratchpad=self.scratchpad)
+        generate_actions_output = self.generate_action(game_state=game_state, last_action=self.last_action, scratchpad=self.scratchpad, feedback=self.last_feedback)
         self.last_action = generate_actions_output.action
 
         self.steps += 1
@@ -132,7 +157,7 @@ class GamePlayingAgent(dspy.Module):
         analysis = self.generate_mechanics_analysis(old_game_state=self.last_game_state, action=self.last_action, new_game_state=new_game_state)
         self.scratchpad += analysis.new_notes_for_scratchpad
         self.last_analysis = analysis.game_mechanics_analysis
-
+        self.last_feedback = self.last_analysis
         self.last_reward = reward
 
         return self.last_action, obs, reward, terminated, truncated, info
