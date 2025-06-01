@@ -6,6 +6,9 @@ from enum import Enum
 from memory import MemoryEnv
 import os
 import gymnasium
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def setup_mlflow():
     mlflow.dspy.autolog()
@@ -139,7 +142,7 @@ class GamePlayingAgent(dspy.Module):
 class Game:
     def __init__(self, size=13, random_length=False, max_steps=100, render_mode="text"):
         self.env = MemoryEnv(
-            size=13,
+            size=size,
             random_length=False,
             max_steps=100,
             render_mode=render_mode
@@ -159,5 +162,5 @@ if __name__ == "__main__":
     setup_mlflow()
     configure_dspy()
     with mlflow.start_run():
-        game = Game(render_mode=os.getenv("RENDER_MODE", "text"))
+        game = Game(render_mode=os.getenv("RENDER_MODE", "text"), size=int(os.getenv("GAME_SIZE", 13)), random_length=os.getenv("GAME_RANDOM_LENGTH", False))
         game.run()

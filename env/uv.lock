@@ -431,6 +431,7 @@ dependencies = [
     { name = "minigrid" },
     { name = "mlflow" },
     { name = "pytest" },
+    { name = "python-dotenv" },
 ]
 
 [package.metadata]
@@ -439,6 +440,7 @@ requires-dist = [
     { name = "minigrid", specifier = ">=3.0.0" },
     { name = "mlflow", specifier = ">=2.22.0" },
     { name = "pytest", specifier = ">=8.3.5" },
+    { name = "python-dotenv", specifier = ">=1.1.0" },
 ]
 
 [[package]]
