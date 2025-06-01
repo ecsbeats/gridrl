@@ -147,7 +147,7 @@ class GamePlayingAgent(dspy.Module):
         game_state = get_game_state(env)
 
         self.last_game_state = game_state
-        generate_actions_output = self.generate_action(game_state=game_state, last_action=self.last_action, scratchpad=self.scratchpad, feedback=self.last_feedback)
+        generate_actions_output = self.generate_action(game_state=game_state, previous_action=self.last_action, scratchpad=self.scratchpad, feedback=self.last_feedback)
         self.last_action = generate_actions_output.action
 
         self.steps += 1
